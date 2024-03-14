@@ -287,14 +287,28 @@ function getQuarter(date) {
 function getWorkSchedule(period, countWorkDays, countOffDays) {
   const startDay = period.start.slice(0, 2);
   const startMonth = period.start.slice(3, 5);
-  let start = new Date(period.start);
-  const end = new Date(period.end);
+  const startYear = period.start.slice(6, 10);
+  const startString = `${startMonth}-${startDay}-${startYear}`;
+  let start = new Date(startString);
+  const endDay = period.end.slice(0, 2);
+  const endMonth = period.end.slice(3, 5);
+  const endYear = period.end.slice(6, 10);
+  const endString = `${endMonth}-${endDay}-${endYear}`;
+  const end = new Date(endString);
   const msPerDay = 24 * 3600 * 1000;
   const array = [];
-  while (Date.parse(start) < Date.parse(end)) {
+  while (Date.parse(start) <= Date.parse(end)) {
     for (let i = 1; i <= countWorkDays; i += 1) {
-      array.push(start.toString().slice(0, 10));
+      const date = start.getDate();
+      const month = start.getMonth() + 1;
+      const year = start.getFullYear();
+      array.push(
+        `${date.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`
+      );
       start = new Date(Date.parse(start) + msPerDay);
+      if (Date.parse(start) > Date.parse(end)) {
+        return array;
+      }
     }
     start = new Date(Date.parse(start) + msPerDay * countOffDays);
   }
@@ -313,8 +327,17 @@ function getWorkSchedule(period, countWorkDays, countOffDays) {
  * Date(2022, 2, 1) => false
  * Date(2020, 2, 1) => true
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  if (date.getFullYear() % 4 === 0) {
+    if (date.getFullYear() % 100 === 0) {
+      if (date.getFullYear() % 400 === 0) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+  return false;
 }
 
 module.exports = {
